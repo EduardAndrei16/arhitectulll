@@ -827,8 +827,108 @@
   .foot a:hover { color: var(--accent); }
   .foot .heart { color: var(--accent); }
 
+  /* ─── JS-driven animation classes ────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .7s cubic-bezier(.16,.84,.32,1), transform .7s cubic-bezier(.16,.84,.32,1);
+    will-change: opacity, transform;
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+  .card.reveal, .log.reveal, .qitem.reveal, .step.reveal, .stat.reveal {
+    transition-delay: var(--rd, 0ms);
+  }
+
+  /* boot sequence: hidden until JS animates */
+  .boot { min-height: 8em; }
+  .boot .type-cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: -2px;
+    animation: blink 1.1s steps(2) infinite;
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  /* scramble headline: subtle glow while scrambling */
+  h1.headline .verb.scrambling {
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  /* activity toast */
+  .toast-stack {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 200;
+    pointer-events: none;
+    max-width: 320px;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .toast {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-2);
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity .35s ease, transform .35s cubic-bezier(.16,.84,.32,1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    position: relative;
+  }
+  .toast::before {
+    content: "+";
+    position: absolute;
+    top: -7px; left: -6px;
+    color: var(--accent);
+    font-size: 12px;
+    background: var(--bg);
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .toast.in {
+    opacity: 1;
+    transform: none;
+  }
+  .toast.out {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  .toast .t-head {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 10.5px;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .toast .t-head .t-tag { color: var(--accent); }
+  .toast .t-msg { color: var(--text); font-size: 12.5px; line-height: 1.4; }
+  .toast.growth { border-left-color: var(--magenta); }
+  .toast.growth::before { color: var(--magenta); }
+  .toast.growth .t-head .t-tag { color: var(--magenta); }
+  .toast.info { border-left-color: var(--info); }
+  .toast.info::before { color: var(--info); }
+  .toast.info .t-head .t-tag { color: var(--info); }
+  @media (max-width: 500px) {
+    .toast-stack { bottom: 16px; right: 12px; left: 12px; max-width: none; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+    .toast-stack { display: none; }
   }
 </style>
 
@@ -880,7 +980,7 @@
             <span class="verb">creștem.<span class="hero-cursor" aria-hidden="true"></span></span>
           </h1>
 
-          <p class="lede">Recuperare conturi Instagram + strategie de creștere. Prin canale <code>oficiale meta</code>, cu campanii <code>meta ads</code> reale — nu bots, nu urmăritori fake, nu magie neagră. Codul rulează, nu promisiunile.</p>
+          <p class="lede">Recuperare conturi Instagram + strategie de creștere. Prin canale <code>oficiale meta</code>, cu campanii <code>meta ads</code> reale — nu boturi, nu urmăritori fake, nu magie neagră. Codul rulează, nu promisiunile.</p>
 
           <div class="cta-row">
             <a href="#connect" class="btn"><span class="prompt-sm">$</span> ./deschide_ticket</a>
@@ -907,22 +1007,22 @@
       <div class="stats">
         <div class="stat">
           <span class="k">// conturi restabilite</span>
-          <span class="v">217<span class="u">+</span></span>
+          <span class="v"><span class="num" data-count="217">217</span><span class="u">+</span></span>
           <span class="trend">▲ +23 luna trecută</span>
         </div>
         <div class="stat">
           <span class="k">// rată de reactivare</span>
-          <span class="v">94<span class="u">%</span></span>
+          <span class="v"><span class="num" data-count="94">94</span><span class="u">%</span></span>
           <span class="trend">▲ +2pp vs. Q3</span>
         </div>
         <div class="stat">
           <span class="k">// campanii growth</span>
-          <span class="v">38<span class="u">/on</span></span>
+          <span class="v"><span class="num" data-count="38">38</span><span class="u">/on</span></span>
           <span class="trend">▲ 12M impresii/lună</span>
         </div>
         <div class="stat">
           <span class="k">// plată în avans</span>
-          <span class="v">0<span class="u">₽</span></span>
+          <span class="v"><span class="num" data-count="0">0</span><span class="u">₽</span></span>
           <span class="trend">▲ mereu 0, mereu va fi</span>
         </div>
       </div>
@@ -1229,6 +1329,8 @@
   </section>
 </main>
 
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
 <footer>
   <div class="wrap foot">
     <span>© 2026 arhitectulll · CUI RO00000000 · București</span>
@@ -1242,3 +1344,225 @@
     </span>
   </div>
 </footer>
+
+<script>
+(() => {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  /* ── 1. Live clock in the terminal chrome title ────── */
+  (function liveClock() {
+    const el = document.querySelector('.chrome-title .sess');
+    if (!el) return;
+    const base = el.textContent;
+    function tick() {
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      el.textContent = `${base.trim()} · ${hh}:${mm}:${ss}`;
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  /* ── 2. Boot typewriter ────────────────────────────── */
+  async function typewriter(el, source, speed = 6) {
+    if (prefersReduced) { el.innerHTML = source; return; }
+    el.innerHTML = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'type-cursor';
+    el.appendChild(cursor);
+
+    let i = 0;
+    let buffer = '';
+    while (i < source.length) {
+      if (source[i] === '<') {
+        const end = source.indexOf('>', i);
+        if (end === -1) { buffer += source[i++]; }
+        else {
+          buffer += source.slice(i, end + 1);
+          i = end + 1;
+        }
+      } else if (source[i] === '\n') {
+        buffer += '\n';
+        i++;
+        el.innerHTML = buffer;
+        el.appendChild(cursor);
+        await sleep(90);
+      } else {
+        buffer += source[i++];
+        el.innerHTML = buffer;
+        el.appendChild(cursor);
+        await sleep(speed + Math.random() * 8);
+      }
+    }
+    await sleep(400);
+    cursor.remove();
+  }
+
+  const boot = document.querySelector('pre.boot');
+  if (boot) {
+    const src = boot.innerHTML.trim();
+    typewriter(boot, src, 5);
+  }
+
+  /* ── 3. Scramble reveal on headline ────────────────── */
+  const scrambleChars = '!<>-_\\/[]{}—=+*^?#§@%&░▒▓';
+  function scramble(el, finalText, duration = 700, onDone) {
+    if (prefersReduced) { el.textContent = finalText; onDone?.(); return; }
+    el.classList.add('scrambling');
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      let out = '';
+      for (let i = 0; i < finalText.length; i++) {
+        const ch = finalText[i];
+        const ratio = i / Math.max(1, finalText.length - 1);
+        if (ratio < t) out += ch;
+        else if (ch === ' ' || ch === '\n') out += ch;
+        else out += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+      }
+      el.textContent = out;
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        el.textContent = finalText;
+        el.classList.remove('scrambling');
+        onDone?.();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  (async function heroReveal() {
+    const verbs = document.querySelectorAll('h1.headline .verb');
+    const originals = Array.from(verbs).map(v => v.textContent.trim());
+    // preserve the cursor node on the last verb
+    const cursorNode = document.querySelector('h1.headline .hero-cursor');
+    if (cursorNode) cursorNode.style.display = 'none';
+    verbs.forEach(v => v.textContent = '');
+    // delay so boot has room to start
+    await sleep(prefersReduced ? 0 : 550);
+    for (let i = 0; i < verbs.length; i++) {
+      await new Promise(res => scramble(verbs[i], originals[i], 500 + i * 100, res));
+      if (i < verbs.length - 1) await sleep(prefersReduced ? 0 : 90);
+    }
+    if (cursorNode) {
+      verbs[verbs.length - 1].appendChild(cursorNode);
+      cursorNode.style.display = '';
+    }
+  })();
+
+  /* ── 4. Scroll reveal for cards / logs / steps / FAQ / stats ── */
+  const revealTargets = document.querySelectorAll(
+    '.card, .log, .qitem, .step, .stat, .quote, .status-panel'
+  );
+  revealTargets.forEach(el => el.classList.add('reveal'));
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, idx) => {
+      if (entry.isIntersecting) {
+        const siblings = Array.from(entry.target.parentElement.children)
+          .filter(c => c.classList.contains('reveal'));
+        const localIdx = siblings.indexOf(entry.target);
+        entry.target.style.setProperty('--rd', Math.min(6, localIdx) * 60 + 'ms');
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  revealTargets.forEach(el => io.observe(el));
+
+  /* ── 5. Stat counter (triggers when .stat becomes visible) ── */
+  function countUp(el, target, duration = 1400) {
+    if (prefersReduced || target === 0) { el.textContent = target; return; }
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.floor(target * eased);
+      if (t < 1) requestAnimationFrame(frame);
+      else el.textContent = target;
+    }
+    el.textContent = '0';
+    requestAnimationFrame(frame);
+  }
+  const countIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const num = entry.target.querySelector('.num');
+        if (num) {
+          const target = parseInt(num.dataset.count, 10);
+          countUp(num, isNaN(target) ? 0 : target, 1300);
+        }
+        countIO.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.stat').forEach(s => countIO.observe(s));
+
+  /* ── 6. Scramble on hover for card titles ──────────── */
+  document.querySelectorAll('.card h3, .log-msg, .qtitle').forEach(el => {
+    let running = false;
+    el.addEventListener('mouseenter', () => {
+      if (running || prefersReduced) return;
+      const isTitle = el.tagName === 'H3';
+      if (!isTitle) return; // limit to card headings for restraint
+      running = true;
+      const original = el.textContent;
+      scramble(el, original, 380, () => { running = false; });
+    });
+  });
+
+  /* ── 7. Activity toasts (fake live feed, 3 events) ── */
+  const toasts = [
+    { tag: 'recovery.disable', type: '', head: 'CASE RESTORED', msg: '@l***_studio · cont reactivat după 9 zile' },
+    { tag: 'growth.ads', type: 'growth', head: 'CAMPAIGN LIVE', msg: 'MA-02 · ROAS 5.4× · buget optimizat' },
+    { tag: 'recovery.hijack', type: 'info', head: 'NEW TICKET', msg: 'HK-02 · dosar deschis · în evaluare' },
+    { tag: 'growth.organic', type: 'growth', head: 'MILESTONE', msg: 'OR-03 · 1M impresii cumulate luna asta' },
+  ];
+  const stack = document.getElementById('toastStack');
+  function fmtTime() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  async function showToast(t) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (t.type ? ' ' + t.type : '');
+    el.innerHTML = `
+      <div class="t-head"><span class="t-tag">${t.head}</span><span>${fmtTime()}</span></div>
+      <div class="t-msg">${t.msg}</div>
+      <div class="t-head" style="margin: 6px 0 0; border-top: 1px dashed var(--line-2); padding-top: 6px;"><span>${t.tag}</span><span>[ok]</span></div>
+    `;
+    stack.appendChild(el);
+    await sleep(20);
+    el.classList.add('in');
+    await sleep(5200);
+    el.classList.add('out');
+    el.classList.remove('in');
+    await sleep(400);
+    el.remove();
+  }
+  async function runToasts() {
+    if (prefersReduced) return;
+    await sleep(6500);
+    for (let i = 0; i < toasts.length; i++) {
+      showToast(toasts[i]);
+      await sleep(4200 + Math.random() * 1600);
+    }
+  }
+  runToasts();
+
+  /* ── smooth scroll for nav links ───────────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href');
+      if (id.length < 2) return;
+      const target = document.querySelector(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+})();
+</script>
